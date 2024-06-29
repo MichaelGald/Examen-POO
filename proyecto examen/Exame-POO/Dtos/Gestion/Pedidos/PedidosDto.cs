@@ -8,7 +8,7 @@
 
         public DateTime Tiempo { get; set; }
 
-        public string ListaProductos { get; set; }
+        public List<Guid> ListaProductos { get; set; }
 
         public decimal Total { get; set; }
     }

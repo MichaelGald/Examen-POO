@@ -7,6 +7,8 @@ namespace Exame_POO.DataBase.Entity
         public Guid IdPedido { get; set; }
         [Display(Name = "Tiempo")]
         public DateTime Tiempo { get; set; }
+        [Display(Name ="Lista de producto")]
+        public List<Guid> ListaPedido { get; set; }
         [Display(Name = "ToTal del pedido")]
         public decimal Total { get; set; }
     }

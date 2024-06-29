@@ -8,10 +8,25 @@ namespace Exame_POO.Services
 {
     public class PedidoServicios : IPedidoServicios
     {
-        public readonly string _JSON_FILE;
+        public readonly string _PEDIDOS_JSON_FILE;
+        public readonly string _PRODUCTOS_JSON_FILE;
+        private List<ProductoDto> _productos;
+
         public PedidoServicios()
         {
-            _JSON_FILE = "SeedData/Pedido.json";
+            _PEDIDOS_JSON_FILE = "SeedData/Pedido.json";
+            _PRODUCTOS_JSON_FILE = "SeedData/Producto.json";
+            _productos = new List<ProductoDto>();
+            LoadProductos().Wait();
+        }
+
+        private async Task LoadProductos()
+        {
+            if (File.Exists(_PRODUCTOS_JSON_FILE))
+            {
+                var json = await File.ReadAllTextAsync(_PRODUCTOS_JSON_FILE);
+                _productos = JsonConvert.DeserializeObject<List<ProductoDto>>(json);
+            }
         }
 
         public async Task<bool> CreatePedidoAsync(PedidoCreateDto dto)
@@ -24,7 +39,7 @@ namespace Exame_POO.Services
                 IdCliente = Guid.NewGuid(),
                 ListaProductos = dto.ListaProductos,
                 Tiempo = DateTime.Now,
-                Total = dto.Total,
+                Total = CalcularTotal(dto.ListaProductos),
             };
             pedidosDtos.Add(pedidoDto);
 
@@ -83,7 +98,7 @@ namespace Exame_POO.Services
                 IdPedido = x.IdPedido,
                 IdCliente = x.IdCliente,
                 Tiempo = x.Tiempo,
-                ListaProductos = x.ListaProductos,
+                ListaPedido = x.ListaProductos,
                 Total = x.Total,
             }).ToList();
 
@@ -105,18 +120,18 @@ namespace Exame_POO.Services
 
         private async Task<List<PedidosDto>> ReadPedidosFromFileAsync()
         {
-            if (!File.Exists(_JSON_FILE))
+            if (!File.Exists(_PEDIDOS_JSON_FILE))
             {
                 return new List<PedidosDto>();
             }
-            var json = await File.ReadAllTextAsync(_JSON_FILE);
+            var json = await File.ReadAllTextAsync(_PEDIDOS_JSON_FILE);
             var categories = JsonConvert.DeserializeObject<List<PedidoEntity>>(json);
             var dtos = categories.Select(x => new PedidosDto
             {
                 IdPedido = x.IdPedido,
                 IdCliente = x.IdCliente,
                 Tiempo = x.Tiempo,
-                ListaProductos = x.ListaProductos,
+                ListaProductos = x.ListaPedido,
                 Total = x.Total,
             }).ToList();
 
@@ -126,10 +141,14 @@ namespace Exame_POO.Services
         {
             var json = JsonConvert.SerializeObject(pedidos, Formatting.Indented);
 
-            if (File.Exists(_JSON_FILE))
+            if (File.Exists(_PEDIDOS_JSON_FILE))
             {
-                await File.WriteAllTextAsync(_JSON_FILE, json);
+                await File.WriteAllTextAsync(_PEDIDOS_JSON_FILE, json);
             }
+        }
+        private decimal CalcularTotal(List<Guid> listaProductos)
+        {
+            return listaProductos.Sum(productoId => _productos.FirstOrDefault(p => p.IdProducto == productoId)?.Precio ?? 0);
         }
     }
 }

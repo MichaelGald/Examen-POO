@@ -25,33 +25,70 @@ namespace Exame_POO.Services
             var productDto = new ProductoDto
             {
                 IdProducto = Guid.NewGuid(),
-               
-
+                NombrePro = dto.NombrePro,
+                Precio = dto.Precio,
             };
+
             productsDtos.Add(productDto);
 
-            var productos = productsDtos.Select(x => new ProductEntity
+            var productos = productsDtos.Select(x => new ProductoEntity
             {
-                Id = x.Id,
-                Name = x.Name,
-                Description = x.Description,
-                Price = x.Price,
-                Stock = x.Stock,
-
+               IdProducto = x.IdProducto,
+               NombrePro = x.NombrePro,
+               Precio = x.Precio,
             }).ToList();
 
             await WriteProductsToFileAsync(productos);
             return true;
         }
 
-        public Task<bool> DeleteProdctoAsync(Guid id)
+        public async Task<bool> DeleteProdctoAsync(Guid id)
         {
-            throw new NotImplementedException();
+            var productsDto = await ReadProductsFromFileAsync();
+            var productsToDelete = productsDto.FirstOrDefault(x => x.IdProducto == id);
+            if (productsToDelete is null)
+            {
+                return false;
+            }
+            productsDto.Remove(productsToDelete);
+            var products = productsDto.Select(x => new ProductoEntity
+            {
+               IdProducto= x.IdProducto,
+               NombrePro= x.NombrePro,
+               Precio= x.Precio,
+            }).ToList();
+            await WriteProductsToFileAsync(products);
+            return true;
         }
 
-        public Task<bool> EditProductoAsync(ProductoEditDto dto, Guid id)
+        public async Task<bool> EditProductoAsync(ProductoEditDto dto, Guid id)
         {
-            throw new NotImplementedException();
+            var productosDto = await ReadProductsFromFileAsync();
+            var existingProductos = productosDto.FirstOrDefault(producto => producto.IdProducto == id);
+            if (existingProductos is null)
+            {
+                return false;
+            }
+
+            //TODO: Recorrer las cetgorias y actualizar la correspodiente de la lista
+            for (int i = 0; i < productosDto.Count; i++)
+            {
+                if (productosDto[i].IdProducto == id)
+                {
+                    productosDto[i].NombrePro = dto.NombrePro;
+                    productosDto[i].Precio = dto.Precio;
+                }
+            }
+
+            var producto = productosDto.Select(x => new ProductoEntity
+            {
+                IdProducto= x.IdProducto,
+                NombrePro= x.NombrePro, 
+                Precio= x.Precio,
+            }).ToList();
+
+            await WriteProductsToFileAsync(producto);
+            return true;
         }
 
         public async Task<ProductoDto> GetProductoByIdAsync(Guid id)

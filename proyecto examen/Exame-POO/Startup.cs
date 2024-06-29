@@ -1,4 +1,7 @@
-﻿namespace Exame_POO
+﻿using Exame_POO.Services.Interfaces;
+using Exame_POO.Services;
+
+namespace Exame_POO
 {
     public class Startup
     {
@@ -15,12 +18,7 @@
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen();
 
-            // Add Dbcontext
-            //services.AddDbContext<BlogUNAHContext>(options =>
-            //options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
-
-            //// Add custom services
-            //services.AddTransient<ICategoriesServices, CategoriesService>();
+            services.AddTransient<IProductoServicios, ProductoServicios>();
         }
 
 
